@@ -41,14 +41,14 @@ class AliossToolFactory implements ToolFactory<OSSClient> {
             logger.info("Starting OSSClient with alioss.accessKeyId system property (${accessKeyId})")
             logger.info("Starting OSSClient with alioss.accessKeySecret system property (${accessKeySecret})")
         } else {
-            logger.info("Starting Hazelcast with hazelcast.xml from classpath")
+            // TODO logger.info("Starting OSSClient with alioss.xml from classpath")
         }
         oSSClientInstance = new OSSClient(endpoint, accessKeyId, accessKeySecret);
     }
 
     @Override
     OSSClient getInstance(Object... parameters) {
-        if (oSSClientInstance == null) throw new IllegalStateException("HazelcastToolFactory not initialized")
+        if (oSSClientInstance == null) throw new IllegalStateException("AliossToolFactory not initialized")
         return oSSClientInstance
     }
 
@@ -56,7 +56,6 @@ class AliossToolFactory implements ToolFactory<OSSClient> {
     void destroy() {
         // shutdown Hazelcast
         oSSClientInstance.shutdown();
-        // the above may be better than this: if (hazelcastInstance != null) hazelcastInstance.shutdown()
         logger.info("OSSClient shutdown")
     }
 
