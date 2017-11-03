@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- No copyright or license for configuration file, details here are not considered a creative work. -->
+<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-2.1.xsd">
+
+    <default-property name="alioss.bucket" value=""/>
+
+    <default-property name="alioss.endpoint" value=""/>
+    <default-property name="alioss.outer.endpoint" value=""/>
+
+    <default-property name="alioss.trust.ak" value=""/>
+    <default-property name="alioss.trust.sk" value=""/>
+
+    <default-property name="alioss.oss.reader.ak" value=""/>
+    <default-property name="alioss.oss.reader.sk" value=""/>
+
+    <default-property name="alioss.roleArn.read" value=""/>
+    <default-property name="alioss.roleArn.write" value=""/>
+
+    <tools>
+        <tool-factory class="org.let5sne.alioss.AliossToolFactory" init-priority="17" disabled="false"/>
+    </tools>
+
+    <resource-facade>
+        <resource-reference scheme="dbresource" class="org.let5sne.alioss.AliOSSResourceReference"/>
+    </resource-facade>
+
+</moqui-conf>

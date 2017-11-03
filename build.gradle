@@ -27,6 +27,12 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.aliyun.oss/aliyun-sdk-oss
     compile group: 'com.aliyun.oss', name: 'aliyun-sdk-oss', version: '2.8.1'
+    // https://mvnrepository.com/artifact/com.aliyun/aliyun-java-sdk-sts
+    compile group: 'com.aliyun', name: 'aliyun-java-sdk-sts', version: '3.0.0'
+    // https://mvnrepository.com/artifact/com.aliyun/aliyun-java-sdk-core
+    compile group: 'com.aliyun', name: 'aliyun-java-sdk-core', version: '3.4.0'
+
+
 }
 
 // by default the Java plugin runs test on build, change to not do that (only run test if explicit task)
