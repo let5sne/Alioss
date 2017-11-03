@@ -296,8 +296,20 @@ class AliOSSResourceReference extends BaseResourceReference {
             if (dbrf != null) {
                 // first delete history records
                 dbrf.deleteRelated("histories")
+                if(dbrf.getString("mimeType").startsWith("image/")){
+                    // then delete from alioss
+                    ToolFactory<AliossTool> aliossToolFactory =  ecf.getToolFactory("AliossTool")
+                    if(aliossToolFactory!=null){
+                        String filename = getPath()
+                        AliossTool aliossTool = aliossToolFactory.getInstance()
+                        aliossTool.deleteObject(ossbucket,this.getText())
+                    }else{
+                        logger.error("..........putStream alioss error no aliossToolFactory!")
+                    }
+                }
                 // then delete the file
                 dbrf.delete()
+
             }
         }
         dbr.delete()
