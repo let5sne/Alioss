@@ -30,7 +30,7 @@ class AliOSSResourceReference extends BaseResourceReference {
     String location
     String resourceId = (String) null
 
-    AliOSSResourceReference() { this.ossbucket = System.getProperty("alioss.bucket")}
+    AliOSSResourceReference() { this.ossbucket = System.getProperty("alioss.bucket.pub")}
 
     @Override ResourceReference init(String location, ExecutionContextFactoryImpl ecf) {
         this.ecf = ecf

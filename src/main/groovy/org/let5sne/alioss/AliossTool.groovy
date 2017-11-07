@@ -4,6 +4,9 @@ import com.aliyun.oss.HttpMethod
 import com.aliyun.oss.OSSClient
 import com.aliyun.oss.common.utils.DateUtil
 import com.aliyun.oss.model.GeneratePresignedUrlRequest
+import com.aliyun.oss.model.OSSObjectSummary
+import com.aliyun.oss.model.ObjectListing
+import com.aliyun.oss.model.PutObjectResult
 import com.aliyuncs.DefaultAcsClient
 import com.aliyuncs.auth.sts.AssumeRoleRequest
 import com.aliyuncs.auth.sts.AssumeRoleResponse
@@ -15,7 +18,6 @@ import com.aliyuncs.profile.IClientProfile
 import groovy.transform.CompileStatic
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.Date
 
 @CompileStatic
 class AliossTool extends OSSClient {
@@ -38,7 +40,7 @@ class AliossTool extends OSSClient {
         this.endpointOuter = System.getProperty("alioss.outer.endpoint")
     }
 
-    public String getPresignedUrl(String key,String roleSessionName,String ak,String sk,String style){
+    public String getPresignedUrl(String key, String roleSessionName, String ak, String sk, String style) {
         String roleArn = System.getProperty("alioss.roleArn.read")
         def policy = '''
             {
@@ -51,38 +53,44 @@ class AliossTool extends OSSClient {
                     "oss:GetObject"
                   ],
                   "Resource": [
-                    "acs:oss:*:*:'''+bucket+'''/'''+key+'''"
+                    "acs:oss:*:*:''' + bucket + '''/''' + key + '''"
                   ]
                 }
               ]
             }
         '''
-        AssumeRoleResponse assumeRoleResponse = this.assumeRole(roleArn,roleSessionName,policy,ak,sk)
-        if(!assumeRoleResponse) return ""
-        OSSClient ossClient = new OSSClient(endpointOuter,assumeRoleResponse.getCredentials().getAccessKeyId(),assumeRoleResponse.getCredentials().getAccessKeySecret(),assumeRoleResponse.getCredentials().securityToken);
+        AssumeRoleResponse assumeRoleResponse = this.assumeRole(roleArn, roleSessionName, policy, ak, sk)
+        if (!assumeRoleResponse) return ""
+        OSSClient ossClient = new OSSClient(endpointOuter, assumeRoleResponse.getCredentials().getAccessKeyId(), assumeRoleResponse.getCredentials().getAccessKeySecret(), assumeRoleResponse.getCredentials().securityToken);
         Date dexpiration = DateUtil.parseIso8601Date(assumeRoleResponse.getCredentials().getExpiration())
-        if(style){
+        if (style) {
             GeneratePresignedUrlRequest signReq = new GeneratePresignedUrlRequest(bucket, key, HttpMethod.GET)
             signReq.setExpiration(dexpiration)
             signReq.setProcess(style)
             URL signedUrl = ossClient.generatePresignedUrl(signReq)
-            if(signedUrl) return signedUrl.toURI()
+            if (signedUrl) return signedUrl.toURI()
             return ""
-        }else{
-            URL url = ossClient.generatePresignedUrl(bucket,key,dexpiration)
+        } else {
+            URL url = ossClient.generatePresignedUrl(bucket, key, dexpiration)
             ossClient.shutdown()
-            if(url) return url.toURI()
+            if (url) return url.toURI()
             return ""
         }
     }
 
-    public String getPresignedUrl(String key,String roleSessionName,String style){
+    public String getPresignedUrl(String key, String roleSessionName, String style) {
         String ak = System.getProperty("alioss.oss.reader.ak")
         String sk = System.getProperty("alioss.oss.reader.sk")
-        return this.getPresignedUrl(key,roleSessionName,ak,sk,style)
+        return this.getPresignedUrl(key, roleSessionName, ak, sk, style)
     }
 
-    private AssumeRoleResponse assumeRole(String roleArn, String roleSessionName, String policy,String ak,String sk) {
+    public String getPubUrl(String key, String style) {
+        String url = System.getProperty("alioss.bucket.pub.url")
+        if (style) return url + key + "?x-oss-process=" + style
+        return url + key
+    }
+
+    private AssumeRoleResponse assumeRole(String roleArn, String roleSessionName, String policy, String ak, String sk) {
         try {
             // 创建一个 Aliyun Acs Client, 用于发起 OpenAPI 请求
             IClientProfile profile = DefaultProfile.getProfile(REGION_CN_HANGZHOU, ak, sk);
@@ -103,4 +111,22 @@ class AliossTool extends OSSClient {
         }
     }
 
+    public List<String> listFiles(String prefix) {
+        ObjectListing objectListing = this.listObjects(bucket, prefix)
+        List<OSSObjectSummary> sums = objectListing.getObjectSummaries()
+        if (sums) return sums.collect { it.key }
+        return null
+    }
+
+    public boolean saveImage(String bucket, String key, InputStream is) {
+        logger.info("..........saveImage.")
+        try {
+            PutObjectResult result = this.putObject(bucket ?: this.bucket, key, is)
+            return true
+        } catch (Exception e) {
+            e.printStackTrace()
+            return false
+        }
+
+    }
 }
